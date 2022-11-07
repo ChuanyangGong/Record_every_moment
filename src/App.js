@@ -1,10 +1,10 @@
 import './App.css';
-import HomePage from './pages/HomePage';
+import MiniRecoder from './pages/MiniRecorder';
 
 function App() {
   return (
     <div className="App">
-      <HomePage />
+      <MiniRecoder />
     </div>
   );
 }

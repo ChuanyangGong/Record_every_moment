@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, dialog } = require('electron')
+const { app, BrowserWindow, Menu, ipcMain, dialog } = require('electron')
 const path = require('path')
 const url = require('url');
 
@@ -6,12 +6,18 @@ const url = require('url');
 const mode = process.argv[2];
 
 const createWindow = () => {
+    Menu.setApplicationMenu(null)
     const mainWindow = new BrowserWindow({
-        width: 800,
-        height: 600,
+        width: 250,
+        height: 120,
+        maxWidth: 250,
+        maxHeight: 120,
+        minWidth: 250,
+        minHeight: 120,
         webPreferences: {
             preload: path.join(__dirname, 'preload.js')
-        }
+        },
+        alwaysOnTop: true
     })
 
     if (mode === 'dev') {
@@ -24,6 +30,9 @@ const createWindow = () => {
         }))
     }
     mainWindow.loadURL("http://127.0.0.1:3000/")
+    // mainWindow.webContents.openDevTools({
+    //     mode:'undocked'
+    // });
 }
 
 app.whenReady().then(() => {
@@ -36,5 +45,3 @@ app.whenReady().then(() => {
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') app.quit()
 })
-
-console.log(process.platform)
