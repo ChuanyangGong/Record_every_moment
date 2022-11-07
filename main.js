@@ -1,4 +1,4 @@
-const { app, BrowserWindow, Menu, ipcMain, dialog } = require('electron')
+const { app, BrowserWindow, Menu, MenuItem, ipcMain, dialog } = require('electron')
 const path = require('path')
 const url = require('url');
 
@@ -6,7 +6,6 @@ const url = require('url');
 const mode = process.argv[2];
 
 const createWindow = () => {
-    Menu.setApplicationMenu(null)
     const mainWindow = new BrowserWindow({
         width: 250,
         height: 90,
@@ -36,6 +35,31 @@ const createWindow = () => {
         mode:'undocked'
     });
     // mainWindow.setIgnoreMouseEvents(true)
+
+    // 设置快捷键
+    const debouncedAccelerator = debounce((action) => {
+        mainWindow.webContents.send('invoke:accelerator', action)
+    }, 100, true)
+
+    const menu = new Menu()
+    menu.append(new MenuItem({
+    label: 'operation',
+    submenu: [{
+        role: 'start/pause',
+        accelerator: process.platform === 'darwin' ? 'Alt+Cmd+I' : 'Ctrl+D',
+        click: () => debouncedAccelerator('startOrPause')
+    }]
+    }))
+    menu.append(new MenuItem({
+    label: 'operation',
+    submenu: [{
+        role: 'stop',
+        accelerator: process.platform === 'darwin' ? 'Alt+Cmd+I' : 'Ctrl+F',
+        click: () => debouncedAccelerator('stop')
+    }]
+    }))
+
+    Menu.setApplicationMenu(menu)
 }
 
 app.whenReady().then(() => {
@@ -48,3 +72,36 @@ app.whenReady().then(() => {
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') app.quit()
 })
+
+function debounce(func, wait, immediate) {
+
+    let timeout, result;
+
+    let debounced = function () {
+        let context = this;
+        let args = arguments;
+
+        if (timeout) clearTimeout(timeout);
+        if (immediate) {
+            // 如果已经执行过，不再执行
+            let callNow = !timeout;
+            timeout = setTimeout(function(){
+                timeout = null;
+            }, wait)
+            if (callNow) result = func.apply(context, args)
+        }
+        else {
+            timeout = setTimeout(function(){
+                func.apply(context, args)
+            }, wait);
+        }
+        return result;
+    };
+
+    debounced.cancel = function() {
+        clearTimeout(timeout);
+        timeout = null;
+    };
+
+    return debounced;
+}

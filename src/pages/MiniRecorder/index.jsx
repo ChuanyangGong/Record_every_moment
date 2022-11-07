@@ -1,7 +1,8 @@
-import { useState, useEffect, useMemo, useCallback } from "react"
+import { useState, useEffect, useMemo, useCallback, useRef } from "react"
 import styles from './index.module.scss'
 import CONST from "../../common/const"
-import moment from 'moment';
+import Tools from "../../common/utils"
+import moment from 'moment'
 
 import ClockItem from "./components/ClockItem"
 import Iconfont from "../../components/Iconfont";
@@ -65,6 +66,25 @@ export default function MiniRecoder() {
             startInterval(newTimeReocrds)
         }
     }, [curStatus, intervalHandler, startInterval, timeRecords])
+
+    // 设置快捷键处理函数
+    useEffect(() => {
+        window.electronAPI.onHandleAccelerator((event, value) => {
+            if (curStatus === CONST.CLOCK_STATUS.IS_PAUSE && value === "startOrPause") {
+                onChangeStatus("start")
+            } else if (curStatus === CONST.CLOCK_STATUS.READY_TO_START && value === "startOrPause") {
+                onChangeStatus("start")
+            } else if (curStatus === CONST.CLOCK_STATUS.IS_PAUSE && value === "stop") {
+                onChangeStatus("stop")
+            } else if (curStatus === CONST.CLOCK_STATUS.IS_RECORDING && value === "startOrPause") {
+                onChangeStatus("pause")
+            }
+        })
+        
+        return () => {
+            window.electronAPI.onCancleAccelerator()
+        }
+    }, [curStatus, onChangeStatus])
 
     const ButtonList = useMemo(() => {
         let res = []
