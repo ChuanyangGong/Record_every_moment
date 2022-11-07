@@ -9,11 +9,13 @@ const createWindow = () => {
     Menu.setApplicationMenu(null)
     const mainWindow = new BrowserWindow({
         width: 250,
-        height: 120,
+        height: 90,
         maxWidth: 250,
-        maxHeight: 120,
+        maxHeight: 90,
         minWidth: 250,
-        minHeight: 120,
+        minHeight: 90,
+        frame: false,
+        transparent: true,
         webPreferences: {
             preload: path.join(__dirname, 'preload.js')
         },
@@ -30,9 +32,10 @@ const createWindow = () => {
         }))
     }
     mainWindow.loadURL("http://127.0.0.1:3000/")
-    // mainWindow.webContents.openDevTools({
-    //     mode:'undocked'
-    // });
+    mainWindow.webContents.openDevTools({
+        mode:'undocked'
+    });
+    // mainWindow.setIgnoreMouseEvents(true)
 }
 
 app.whenReady().then(() => {

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import styles from "./index.module.scss"
 
 export default function ClockItem(props) {
     const { hasPassedTime } = props
@@ -23,7 +24,7 @@ export default function ClockItem(props) {
     }, [hasPassedTime, timeProcessor])
 
     return (
-        <div>
+        <div className={styles.clockWrap}>
             {hourStr}:{minuteStr}:{secondStr}
         </div>
     )

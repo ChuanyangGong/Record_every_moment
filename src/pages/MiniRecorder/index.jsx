@@ -1,10 +1,10 @@
 import { useState, useEffect, useMemo, useCallback } from "react"
-import { Button } from "antd"
 import styles from './index.module.scss'
 import CONST from "../../common/const"
 import moment from 'moment';
 
 import ClockItem from "./components/ClockItem"
+import Iconfont from "../../components/Iconfont";
 
 export default function MiniRecoder() {
     const [timeRecords, setTimeRecords] = useState([])
@@ -70,20 +70,24 @@ export default function MiniRecoder() {
         let res = []
         if (curStatus === CONST.CLOCK_STATUS.READY_TO_START) {
             res.push(
-                <Button key="start" onClick={() => onChangeStatus("start")}>开始</Button>
+                <div className={styles.button} key="start" onClick={() => onChangeStatus("start")}>
+                    <Iconfont iconName={'icon-play'} fontSize={20}/>
+                </div>
             )
         } else if (curStatus === CONST.CLOCK_STATUS.IS_PAUSE) {
-            res.push(
-                <Button key="continue" onClick={() => onChangeStatus("start")}>继续</Button>,
-            )
+            res = [
+                <div className={styles.button} key="continue" onClick={() => onChangeStatus("start")}>
+                    <Iconfont iconName={'icon-play'} fontSize={20}/>
+                </div>,
+                <div className={styles.button} key="stop" onClick={() => onChangeStatus("stop")}>
+                    <Iconfont iconName={'icon-stop'} fontSize={26}/>
+                </div>,
+            ]
         } else if (curStatus === CONST.CLOCK_STATUS.IS_RECORDING) {
             res.push(
-                <Button key="pause" onClick={() => onChangeStatus("pause")}>暂停</Button>,
-            )
-        }
-        if (curStatus !== CONST.CLOCK_STATUS.READY_TO_START) {
-            res.push(
-                <Button key="stop" onClick={() => onChangeStatus("stop")}>结束</Button>,
+                <div className={styles.button} key="pause" onClick={() => onChangeStatus("pause")}>
+                    <Iconfont iconName={'icon-pause'} fontSize={20}/>
+                </div>,
             )
         }
         return res
@@ -91,8 +95,13 @@ export default function MiniRecoder() {
 
     return (
         <div className={styles.mainWraper}>
-            <ClockItem hasPassedTime={hasPassedTime}/>
-            {ButtonList}
+            <div className={styles.dragArea}></div>
+            <div className={styles.clockWrap}>
+                <ClockItem hasPassedTime={hasPassedTime}/>
+            </div>
+            <div className={styles.buttonWrap}>
+                {ButtonList}
+            </div>
         </div>
     )
 }
