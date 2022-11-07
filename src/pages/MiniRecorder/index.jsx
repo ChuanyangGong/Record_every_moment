@@ -82,7 +82,7 @@ export default function MiniRecoder() {
         })
         
         return () => {
-            window.electronAPI.onCancleAccelerator()
+            window.electronAPI.onClearAccelerator()
         }
     }, [curStatus, onChangeStatus])
 

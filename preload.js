@@ -11,5 +11,5 @@ contextBridge.exposeInMainWorld('electronAPI', {
     setTitle: (title) => ipcRenderer.send('set-title', title),
     openFile: () => ipcRenderer.invoke('dialog:openFile'),
     onHandleAccelerator : (callback) => ipcRenderer.on('invoke:accelerator', callback),
-    onCancleAccelerator : () => ipcRenderer.removeAllListeners('invoke:accelerator')
+    onClearAccelerator : () => ipcRenderer.removeAllListeners('invoke:accelerator')
 })
