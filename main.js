@@ -1,4 +1,5 @@
-const { app, BrowserWindow, Menu, MenuItem, ipcMain, dialog } = require('electron')
+const { app, BrowserWindow, Menu, MenuItem, ipcMain, dialog, globalShortcut, screen } = require('electron');
+const { min } = require('moment');
 const path = require('path')
 const url = require('url');
 
@@ -6,13 +7,19 @@ const url = require('url');
 const mode = process.argv[2];
 
 const createWindow = () => {
+    // 获取屏幕大小数据
+    let priScreenInfo = screen.getPrimaryDisplay()
+    let screenWidth = priScreenInfo.size.width;
+    let winWidth = 500
+    let winHeight = 90
+    let margin = 40
+    
     const mainWindow = new BrowserWindow({
-        width: 250,
-        height: 90,
-        maxWidth: 250,
-        maxHeight: 90,
-        minWidth: 250,
-        minHeight: 90,
+        width: winWidth,
+        height: winHeight,
+        x: screenWidth - winWidth - margin,
+        y: margin,
+        resizable: false,
         frame: false,
         transparent: true,
         webPreferences: {
@@ -41,12 +48,19 @@ const createWindow = () => {
         mainWindow.webContents.send('invoke:accelerator', action)
     }, 100, true)
 
+    // 监听窗口事件
+    mainWindow.on('focus', () => {
+        mainWindow.webContents.send('invoke:focusOrBlur', 'focus')
+        mainWindow.setIgnoreMouseEvents(false)
+    })
+    mainWindow.on('blur', () => mainWindow.webContents.send('invoke:focusOrBlur', 'blur'))
+
     const menu = new Menu()
     menu.append(new MenuItem({
     label: 'operation',
     submenu: [{
         role: 'start/pause',
-        accelerator: process.platform === 'darwin' ? 'Alt+Cmd+I' : 'Ctrl+D',
+        accelerator: process.platform === 'darwin' ? 'Ctrl+D' : 'Ctrl+D',
         click: () => debouncedAccelerator('startOrPause')
     }]
     }))
@@ -54,7 +68,7 @@ const createWindow = () => {
     label: 'operation',
     submenu: [{
         role: 'stop',
-        accelerator: process.platform === 'darwin' ? 'Alt+Cmd+I' : 'Ctrl+F',
+        accelerator: process.platform === 'darwin' ? 'Ctrl+F' : 'Ctrl+F',
         click: () => debouncedAccelerator('stop')
     }]
     }))
@@ -63,6 +77,30 @@ const createWindow = () => {
 }
 
 app.whenReady().then(() => {
+    globalShortcut.register('Alt+X', () => {
+        let allWindows = BrowserWindow.getAllWindows()
+        if (allWindows.length === 0) {
+            createWindow()
+            return
+        }
+        let miniWindow = allWindows[0]
+        
+        // 恢复最小化窗口
+        if (miniWindow.isMinimized()) {
+            miniWindow.restore()
+        } else if (miniWindow.isFocused()) {
+            miniWindow.blur()
+        } else if (!miniWindow.isFocused()) {
+            miniWindow.focus()
+        }
+    })
+}).then(() => {
+    ipcMain.on('invoke:penetrate', (event) => {
+        const webContents = event.sender
+        const miniWindow = BrowserWindow.fromWebContents(webContents)
+        miniWindow.setIgnoreMouseEvents(true, { forward: true });
+    })
+}).then(() => {
     createWindow()
     app.on('activate', () => {
         if (BrowserWindow.getAllWindows().length === 0) createWindow()

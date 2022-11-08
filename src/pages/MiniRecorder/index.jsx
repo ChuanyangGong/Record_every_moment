@@ -3,9 +3,12 @@ import styles from './index.module.scss'
 import CONST from "../../common/const"
 import Tools from "../../common/utils"
 import moment from 'moment'
+import cn from 'classnames'
 
 import ClockItem from "./components/ClockItem"
 import Iconfont from "../../components/Iconfont";
+import { Input } from "antd"
+const { TextArea } = Input
 
 export default function MiniRecoder() {
     const [timeRecords, setTimeRecords] = useState([])
@@ -67,7 +70,9 @@ export default function MiniRecoder() {
         }
     }, [curStatus, intervalHandler, startInterval, timeRecords])
 
-    // 设置快捷键处理函数
+    // 设置快捷键处理函数及事件注册
+    const [winIsFocus, setWinIsFocus] = useState(false)
+    const [blurTimeout, setBlurTimeout] = useState(null)
     useEffect(() => {
         window.electronAPI.onHandleAccelerator((event, value) => {
             if (curStatus === CONST.CLOCK_STATUS.IS_PAUSE && value === "startOrPause") {
@@ -80,47 +85,82 @@ export default function MiniRecoder() {
                 onChangeStatus("pause")
             }
         })
+
+        window.electronAPI.onHandleFocusOrBlur((event, value) => {
+            if (blurTimeout !== null) {
+                window.clearTimeout(blurTimeout)
+            }
+            if (value === "focus") {
+                setBlurTimeout(null)
+                setWinIsFocus(true)
+            } else {
+                let curTimeout = window.setTimeout(() => {
+                    window.electronAPI.onInvokePenetrate()
+                    setWinIsFocus(false)
+                }, 1000)
+                setBlurTimeout(curTimeout)
+            }
+        })
         
         return () => {
             window.electronAPI.onClearAccelerator()
+            window.electronAPI.onClearFocusOrBlur()
         }
-    }, [curStatus, onChangeStatus])
+    }, [blurTimeout, curStatus, onChangeStatus])
+
+    const [fontSize, setFontSize] = useState(18)
 
     const ButtonList = useMemo(() => {
         let res = []
         if (curStatus === CONST.CLOCK_STATUS.READY_TO_START) {
             res.push(
                 <div className={styles.button} key="start" onClick={() => onChangeStatus("start")}>
-                    <Iconfont iconName={'icon-play'} fontSize={20}/>
+                    <Iconfont iconName={'icon-play'} fontSize={fontSize}/>
                 </div>
             )
         } else if (curStatus === CONST.CLOCK_STATUS.IS_PAUSE) {
             res = [
                 <div className={styles.button} key="continue" onClick={() => onChangeStatus("start")}>
-                    <Iconfont iconName={'icon-play'} fontSize={20}/>
+                    <Iconfont iconName={'icon-play'} fontSize={fontSize}/>
                 </div>,
                 <div className={styles.button} key="stop" onClick={() => onChangeStatus("stop")}>
-                    <Iconfont iconName={'icon-stop'} fontSize={26}/>
+                    <Iconfont iconName={'icon-stop'} fontSize={fontSize}/>
                 </div>,
             ]
         } else if (curStatus === CONST.CLOCK_STATUS.IS_RECORDING) {
             res.push(
                 <div className={styles.button} key="pause" onClick={() => onChangeStatus("pause")}>
-                    <Iconfont iconName={'icon-pause'} fontSize={20}/>
+                    <Iconfont iconName={'icon-pause'} fontSize={fontSize}/>
                 </div>,
             )
         }
         return res
-    }, [curStatus, onChangeStatus])
+    }, [curStatus, fontSize, onChangeStatus])
+
+    // 输入当前事项内容
+    const [curTaskDesc, setCurTaskDesc] = useState("")
 
     return (
-        <div className={styles.mainWraper}>
+        <div className={cn(styles.mainWraper, winIsFocus ? '' : styles.mainWraperBlur)}>
             <div className={styles.dragArea}></div>
-            <div className={styles.clockWrap}>
-                <ClockItem hasPassedTime={hasPassedTime}/>
+            <div className={styles.inputArea}>
+                <div className={styles.inputWrap}>
+                    <TextArea
+                        className={styles.textarea}
+                        value={curTaskDesc} 
+                        onChange={(e) => setCurTaskDesc(e.currentTarget.value)} 
+                        rows={2} 
+                        autoSize={false}
+                    />
+                </div>
             </div>
-            <div className={styles.buttonWrap}>
-                {ButtonList}
+            <div className={styles.timerWrap}>
+                <div className={styles.clockWrap}>
+                    <ClockItem hasPassedTime={hasPassedTime}/>
+                </div>
+                <div className={styles.buttonWrap}>
+                    {ButtonList}
+                </div>
             </div>
         </div>
     )

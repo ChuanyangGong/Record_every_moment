@@ -25,7 +25,9 @@ export default function ClockItem(props) {
 
     return (
         <div className={styles.clockWrap}>
-            {hourStr}:{minuteStr}:{secondStr}
+            <div className={styles.clockContent}>
+                {hourStr}:{minuteStr}:{secondStr}
+            </div>
         </div>
     )
 }
