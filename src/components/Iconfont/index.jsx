@@ -2,10 +2,6 @@ import React, { useState } from "react"
 import cn from 'classnames';
 import './index.module.scss';
 
-const scriptElem = document.createElement('script');
-scriptElem.src = '//at.alicdn.com/t/c/font_3755697_dx2atpygxd.js';
-document.body.appendChild(scriptElem);
-
 export default function Iconfont ({
   className = '',
   iconName,

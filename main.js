@@ -1,8 +1,22 @@
-const { app, BrowserWindow, Menu, MenuItem, ipcMain, globalShortcut, screen } = require('electron');
+const { 
+    app, 
+    BrowserWindow, 
+    Menu, 
+    MenuItem, 
+    ipcMain, 
+    globalShortcut, 
+    screen, 
+    Tray, 
+    nativeImage 
+} = require('electron');
 // const sqlite3 = require('sqlite3')
 const path = require('path')
 const url = require('url');
 const { connectDb } = require('./service/database')
+
+// 初始化托盘
+let tray = null
+const icon = nativeImage.createFromPath('./images/trayIcon.png')
 
 // 初始化数据库
 const database_root = path.join(__dirname, '/database')
@@ -29,7 +43,8 @@ const createWindow = () => {
         webPreferences: {
             preload: path.join(__dirname, 'preload.js')
         },
-        alwaysOnTop: true
+        alwaysOnTop: true,
+        icon: icon
     })
 
     if (mode === 'dev') {
@@ -41,7 +56,6 @@ const createWindow = () => {
             slashes: true
         }))
     }
-    mainWindow.loadURL("http://127.0.0.1:3000/")
     // mainWindow.webContents.openDevTools({
     //     mode:'undocked'
     // });
@@ -98,6 +112,16 @@ app.whenReady().then(() => {
             miniWindow.focus()
         }
     })
+    globalShortcut.register('Alt+C', () => {
+        let allWindows = BrowserWindow.getAllWindows()
+        if (allWindows.length === 0) {
+            return
+        }
+        let miniWindow = allWindows[0]
+        
+        // 最小化窗口
+        miniWindow.minimize()
+    })
 }).then(() => {
     ipcMain.on('invoke:penetrate', (event) => {
         const webContents = event.sender
@@ -147,6 +171,11 @@ app.whenReady().then(() => {
     app.on('activate', () => {
         if (BrowserWindow.getAllWindows().length === 0) createWindow()
     })
+}).then(() => {
+    tray = new Tray(icon)
+    const contextMenu = Menu.buildFromTemplate([
+    ])
+    tray.setContextMenu(contextMenu)
 })
 
 app.on('window-all-closed', () => {
