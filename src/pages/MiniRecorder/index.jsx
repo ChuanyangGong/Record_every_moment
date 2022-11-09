@@ -1,7 +1,6 @@
-import { useState, useEffect, useMemo, useCallback, useRef } from "react"
+import { useState, useEffect, useMemo, useCallback, useRef, useDebugValue } from "react"
 import styles from './index.module.scss'
 import CONST from "../../common/const"
-import Tools from "../../common/utils"
 import moment from 'moment'
 import cn from 'classnames'
 
@@ -16,6 +15,9 @@ export default function MiniRecoder() {
     const [curStatus, setCurStatus] = useState(CONST.CLOCK_STATUS.READY_TO_START)
     const [intervalHandler, setIntervalHandler] = useState(null)
 
+    // 输入当前事项内容
+    const [curTaskDesc, setCurTaskDesc] = useState("")
+
     // 启动定时任务
     const startInterval = useCallback((timeRecords) => {
         const handler = window.setInterval(() => {
@@ -28,6 +30,35 @@ export default function MiniRecoder() {
         }
         setIntervalHandler(handler)
     }, [intervalHandler])
+
+    // 提交任务记录
+    const excuteSubmitTaskRecord = useCallback((curTaskDesc, timeRecords) => {
+        let totalDuration = moment.duration(0)
+        let totalStartAt = null;
+        let totalEndAt = null;
+        const timeRec = timeRecords.map((item, idx) => {
+            if (idx === 0) {
+                totalStartAt = moment(item.startAt)
+            }
+            totalEndAt = moment(item.endAt)
+
+            let thisDuration = item.endAt.diff(item.startAt)
+            totalDuration.add(thisDuration)
+            return {
+                duration: moment.duration(thisDuration).asMilliseconds(),
+                startAt: item.startAt.format("YYYY-MM-DD HH:mm:ss.SSS"),
+                endAt: item.endAt.format("YYYY-MM-DD HH:mm:ss.SSS")
+            }
+        })
+        const submitData = {
+            duration: totalDuration.asMilliseconds(),
+            startAt: totalStartAt.format("YYYY-MM-DD HH:mm:ss.SSS"),
+            endAt: totalEndAt.format("YYYY-MM-DD HH:mm:ss.SSS"),
+            description: curTaskDesc,
+            details: timeRec
+        }
+        window.electronAPI.submitTaskRecordApi(submitData)
+    }, [])
 
     // 处理状态变更事件
     const onChangeStatus = useCallback((action) => {
@@ -47,19 +78,21 @@ export default function MiniRecoder() {
             }
             newTimeReocrds.push(newRecord)
             newStatus = CONST.CLOCK_STATUS.IS_RECORDING
-        } else {
+        } else if (action === "pause") {
             let lastRecord = newTimeReocrds[newTimeReocrds.length - 1]
             lastRecord.endAt = moment()
-            newStatus = action === "pause" ? CONST.CLOCK_STATUS.IS_PAUSE : CONST.CLOCK_STATUS.READY_TO_START
+            newStatus = CONST.CLOCK_STATUS.IS_PAUSE
             
             if (intervalHandler !== null) {
                 window.clearInterval(intervalHandler)
             }
             setIntervalHandler(null)
-        }
-        if (action === "stop") {
+        } else {
+            excuteSubmitTaskRecord(curTaskDesc, newTimeReocrds)
+            setCurTaskDesc("")
             setHasPassedTime(moment.duration(0))
             newTimeReocrds = []
+            newStatus = CONST.CLOCK_STATUS.READY_TO_START
         }
         setTimeRecords(newTimeReocrds)
         setCurStatus(newStatus)
@@ -68,11 +101,12 @@ export default function MiniRecoder() {
         if (newStatus === CONST.CLOCK_STATUS.IS_RECORDING) {
             startInterval(newTimeReocrds)
         }
-    }, [curStatus, intervalHandler, startInterval, timeRecords])
+    }, [curStatus, curTaskDesc, excuteSubmitTaskRecord, intervalHandler, startInterval, timeRecords])
 
     // 设置快捷键处理函数及事件注册
-    const [winIsFocus, setWinIsFocus] = useState(false)
+    const [winIsFocus, setWinIsFocus] = useState(true)
     const [blurTimeout, setBlurTimeout] = useState(null)
+    const inputRef = useRef(null)
     useEffect(() => {
         window.electronAPI.onHandleAccelerator((event, value) => {
             if (curStatus === CONST.CLOCK_STATUS.IS_PAUSE && value === "startOrPause") {
@@ -93,6 +127,7 @@ export default function MiniRecoder() {
             if (value === "focus") {
                 setBlurTimeout(null)
                 setWinIsFocus(true)
+                inputRef.current.focus()
             } else {
                 let curTimeout = window.setTimeout(() => {
                     window.electronAPI.onInvokePenetrate()
@@ -137,15 +172,13 @@ export default function MiniRecoder() {
         return res
     }, [curStatus, fontSize, onChangeStatus])
 
-    // 输入当前事项内容
-    const [curTaskDesc, setCurTaskDesc] = useState("")
-
     return (
         <div className={cn(styles.mainWraper, winIsFocus ? '' : styles.mainWraperBlur)}>
             <div className={styles.dragArea}></div>
-            <div className={styles.inputArea}>
+            <div className={cn(styles.inputArea, winIsFocus ? '' : styles.inputAreaFocus)}>
                 <div className={styles.inputWrap}>
                     <TextArea
+                        ref={inputRef}
                         className={styles.textarea}
                         value={curTaskDesc} 
                         onChange={(e) => setCurTaskDesc(e.currentTarget.value)} 

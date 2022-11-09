@@ -4,10 +4,8 @@
     height: 100%;
     width: 100%;
     background-color: rgb(103, 180, 252);
-    // background-color: rgba(0, 255, 136, 1);
     border-radius: 15px;
-
-    transition: opacity 0.2s;
+    transition: opacity 0.2s, width 1s;
 
     .dragArea {
         position: absolute;
@@ -18,10 +16,12 @@
     }
 
     .inputArea {
-        flex: 2 1 auto;
+        flex: none;
+        width: 307px;
         display: flex;
         justify-content: center;
         align-items: center;
+        transition: width 1s;
         .inputWrap {
             width: 100%;
             .textarea {
@@ -32,6 +32,12 @@
                 overflow: hidden;
             }
         }
+    }
+
+    .inputAreaFocus {
+        transition: width 1s;
+        width: 0;
+        overflow: hidden;
     }
 
     .timerWrap {
@@ -60,5 +66,6 @@
 
 .mainWraperBlur {
     opacity: 0.2;
-    transition: opacity 1s;
+    width: 248px;
+    transition: opacity 1s, width 1s;
 }

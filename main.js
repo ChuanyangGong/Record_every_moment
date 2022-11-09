@@ -1,11 +1,15 @@
-const { app, BrowserWindow, Menu, MenuItem, ipcMain, dialog, globalShortcut, screen } = require('electron');
-const { min } = require('moment');
+const { app, BrowserWindow, Menu, MenuItem, ipcMain, globalShortcut, screen } = require('electron');
+// const sqlite3 = require('sqlite3')
 const path = require('path')
 const url = require('url');
+const { connectDb } = require('./service/database')
+
+// 初始化数据库
+const database_root = path.join(__dirname, '/database')
+const data_path = path.join(database_root, 'data.db')
 
 // read the environment config
 const mode = process.argv[2];
-
 const createWindow = () => {
     // 获取屏幕大小数据
     let priScreenInfo = screen.getPrimaryDisplay()
@@ -38,9 +42,9 @@ const createWindow = () => {
         }))
     }
     mainWindow.loadURL("http://127.0.0.1:3000/")
-    mainWindow.webContents.openDevTools({
-        mode:'undocked'
-    });
+    // mainWindow.webContents.openDevTools({
+    //     mode:'undocked'
+    // });
     // mainWindow.setIgnoreMouseEvents(true)
 
     // 设置快捷键
@@ -57,12 +61,12 @@ const createWindow = () => {
 
     const menu = new Menu()
     menu.append(new MenuItem({
-    label: 'operation',
-    submenu: [{
-        role: 'start/pause',
-        accelerator: process.platform === 'darwin' ? 'Ctrl+D' : 'Ctrl+D',
-        click: () => debouncedAccelerator('startOrPause')
-    }]
+        label: 'operation',
+        submenu: [{
+            role: 'start/pause',
+            accelerator: process.platform === 'darwin' ? 'Ctrl+D' : 'Ctrl+D',
+            click: () => debouncedAccelerator('startOrPause')
+        }]
     }))
     menu.append(new MenuItem({
     label: 'operation',
@@ -99,6 +103,44 @@ app.whenReady().then(() => {
         const webContents = event.sender
         const miniWindow = BrowserWindow.fromWebContents(webContents)
         miniWindow.setIgnoreMouseEvents(true, { forward: true });
+    })
+    ipcMain.on('api:submitTaskRecord', (event, data) => {
+        // 存入 task 数据
+        const taskInfo = {
+            $startAt: data.startAt,
+            $endAt: data.endAt,
+            $duration: data.duration,
+            $description: data.description
+        }
+        const db = connectDb(data_path)
+        let insertSql = `
+        INSERT INTO task_record_tb (startAt, endAt, duration, description) values ($startAt, $endAt, $duration, $description)
+        `
+        db.run(insertSql, taskInfo, function(err, rows) {
+            const { lastID } = this
+
+            // 存入 time slice 数据
+            insertSql = `
+            INSERT INTO time_slice_tb (startAt, endAt, duration, task_record_id) values ($startAt, $endAt, $duration, $task_id)
+            `
+
+            const timeSlice = data.details.map(item => {
+                return {
+                    $startAt: item.startAt,
+                    $endAt: item.endAt,
+                    $duration: item.duration,
+                    $task_id: lastID,
+                }
+            })
+            db.parallelize(() => {
+                const stmt = db.prepare(insertSql)
+                timeSlice.forEach(item => {
+                    stmt.run(item)
+                })
+                stmt.finalize();
+            })
+
+        });
     })
 }).then(() => {
     createWindow()

@@ -15,15 +15,18 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-scripts": "5.0.1",
+    "sqlite": "^4.1.2",
+    "sqlite3": "^5.1.2",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "electron-dev": "electron . dev",
-    "electron": "electron .",
+    "electron-dev": "node initial_script.js && electron . dev",
+    "electron": "node initial_script.js && electron .",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "postinstall": "install-app-deps"
   },
   "eslintConfig": {
     "extends": [
@@ -42,5 +45,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "electron-builder": "^23.6.0"
   }
 }
