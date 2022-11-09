@@ -14,6 +14,12 @@ const path = require('path')
 const url = require('url');
 const { connectDb } = require('./service/database')
 
+// window instance
+const winContents = {
+    miniRecorder: null,
+    dashboardWindow: null
+}
+
 // 初始化托盘
 let tray = null
 const icon = nativeImage.createFromPath('./images/trayIcon.png')
@@ -22,9 +28,21 @@ const icon = nativeImage.createFromPath('./images/trayIcon.png')
 const database_root = path.join(__dirname, '/database')
 const data_path = path.join(database_root, 'data.db')
 
+// 寻找指定窗口
+const getTargetWindow = target => {
+    let allWindows = BrowserWindow.getAllWindows()
+    let tarWin = null
+    allWindows.forEach(win => {
+        if (winContents[target]?.id === win.id) {
+            tarWin = win
+        }
+    })
+    return tarWin
+}
+
 // read the environment config
 const mode = process.argv[2];
-const createWindow = () => {
+const createMiniRecorder = () => {
     // 获取屏幕大小数据
     let priScreenInfo = screen.getPrimaryDisplay()
     let screenWidth = priScreenInfo.size.width;
@@ -47,6 +65,10 @@ const createWindow = () => {
         icon: icon
     })
 
+    winContents.miniRecorder = {
+        type: 'miniRecorder',
+        id: mainWindow.id
+    }
     if (mode === 'dev') {
         mainWindow.loadURL("http://127.0.0.1:3000/")
     } else {
@@ -56,10 +78,6 @@ const createWindow = () => {
             slashes: true
         }))
     }
-    // mainWindow.webContents.openDevTools({
-    //     mode:'undocked'
-    // });
-    // mainWindow.setIgnoreMouseEvents(true)
 
     // 设置快捷键
     const debouncedAccelerator = debounce((action) => {
@@ -75,33 +93,70 @@ const createWindow = () => {
 
     const menu = new Menu()
     menu.append(new MenuItem({
-        label: 'operation',
+        label: '操作',
         submenu: [{
             role: 'start/pause',
             accelerator: process.platform === 'darwin' ? 'Ctrl+D' : 'Ctrl+D',
             click: () => debouncedAccelerator('startOrPause')
+        },
+        {
+            role: 'stop',
+            accelerator: process.platform === 'darwin' ? 'Ctrl+F' : 'Ctrl+F',
+            click: () => debouncedAccelerator('stop')
         }]
-    }))
-    menu.append(new MenuItem({
-    label: 'operation',
-    submenu: [{
-        role: 'stop',
-        accelerator: process.platform === 'darwin' ? 'Ctrl+F' : 'Ctrl+F',
-        click: () => debouncedAccelerator('stop')
-    }]
     }))
 
     Menu.setApplicationMenu(menu)
 }
 
+const createDashboard = () => {
+    const dashboardWin = new BrowserWindow({
+        width: 1000,
+        height: 700,
+        minWidth: 700,
+        minHeight: 420,
+        // frame: false,
+        webPreferences: {
+            preload: path.join(__dirname, 'preload.js')
+        },
+        title: 'Dashboard',
+        icon: icon
+    })
+
+    winContents.dashboardWindow = {
+        type: 'dashboardWindow',
+        id: dashboardWin.id
+    }
+    if (mode === 'dev') {
+        dashboardWin.loadURL("http://127.0.0.1:3000/")
+    } else {
+        dashboardWin.loadURL(url.format({
+            pathname: path.join(__dirname, './build/index.html'),
+            protocol: 'file:',
+            slashes: true
+        }))
+    }
+
+    dashboardWin.webContents.openDevTools({
+        mode:'undocked'
+    });
+}
+
+// 调用 dashboard 去刷新
+const invokeDashboardToRefresh = () => {
+    let curWin = getTargetWindow('dashboardWindow')
+    if (curWin !== null) {
+        curWin.webContents.send('invoke:refreshTable')
+    }
+}
+
 app.whenReady().then(() => {
     globalShortcut.register('Alt+X', () => {
-        let allWindows = BrowserWindow.getAllWindows()
-        if (allWindows.length === 0) {
-            createWindow()
+        let miniWindow = getTargetWindow('miniRecorder')
+        if (miniWindow === null) {
+            createMiniRecorder()
             return
         }
-        let miniWindow = allWindows[0]
         
         // 恢复最小化窗口
         if (miniWindow.isMinimized()) {
@@ -113,20 +168,83 @@ app.whenReady().then(() => {
         }
     })
     globalShortcut.register('Alt+C', () => {
-        let allWindows = BrowserWindow.getAllWindows()
-        if (allWindows.length === 0) {
+        let miniWindow = getTargetWindow('miniRecorder')
+        if (miniWindow === null) {
+            createMiniRecorder()
             return
         }
-        let miniWindow = allWindows[0]
         
         // 最小化窗口
         miniWindow.minimize()
     })
 }).then(() => {
+    ipcMain.handle('invoke:setWindowType', (event) => {
+        const webContents = event.sender
+        const win = BrowserWindow.fromWebContents(webContents)
+        for (let key in winContents) {
+            if (winContents[key] !== null && winContents[key].id === win.id) {
+                return key
+            }
+        }
+    })
     ipcMain.on('invoke:penetrate', (event) => {
         const webContents = event.sender
         const miniWindow = BrowserWindow.fromWebContents(webContents)
         miniWindow.setIgnoreMouseEvents(true, { forward: true });
+    })
+    ipcMain.handle('invoke:askForTaskRecord', async (event, filterParam) => {
+        // 查询数据
+        const db = connectDb(data_path)
+        let querySql = `SELECT * FROM task_record_tb WHERE isDelete = 0 AND description LIKE '%${filterParam.keyword ?? ""}%'`
+        if (filterParam.startAt) {
+            querySql += ` AND startAt BETWEEN '${filterParam.startAt}' AND '${filterParam.endAt}'`
+        }
+        const queryPromise = new Promise((resolve, reject) => {
+            db.all(querySql, function(err, rows) {
+                if (err) {
+                    reject({
+                        code: 500,
+                        msg: err.message
+                    })
+                } else {
+                    let idxStart = (filterParam.currentPage - 1) * filterParam.pageSize
+                    let idxLast = idxStart + filterParam.pageSize
+                    let data = {
+                        total: rows.length,
+                        rows: rows.slice(idxStart, idxLast)
+                    }
+
+                    resolve({
+                        code: 200,
+                        data: data
+                    })
+                }
+            })
+        })
+        const res = await queryPromise;
+        return res
+    })
+    ipcMain.handle('invoke:deleteTaskTecordApi', async (event, id) => {
+        const db = connectDb(data_path)
+        let deleteSql = `UPDATE task_record_tb SET isDelete = 1 WHERE id = ${id}`
+        const deletePromise = new Promise((resolve, reject) => {
+            db.run(deleteSql, function(err, rows) {
+                if (err) {
+                    reject({
+                        code: 500,
+                        msg: err.message
+                    })
+                } else {
+                    resolve({
+                        code: 200,
+                        data: true
+                    })
+                }
+            })
+        })
+        const res = await deletePromise;
+        invokeDashboardToRefresh()
+        return res
     })
     ipcMain.on('api:submitTaskRecord', (event, data) => {
         // 存入 task 数据
@@ -163,13 +281,15 @@ app.whenReady().then(() => {
                 })
                 stmt.finalize();
             })
-
+            
+            invokeDashboardToRefresh()
         });
     })
 }).then(() => {
-    createWindow()
+    createMiniRecorder()
+    createDashboard()
     app.on('activate', () => {
-        if (BrowserWindow.getAllWindows().length === 0) createWindow()
+        if (BrowserWindow.getAllWindows().length === 0) createMiniRecorder()
     })
 }).then(() => {
     tray = new Tray(icon)

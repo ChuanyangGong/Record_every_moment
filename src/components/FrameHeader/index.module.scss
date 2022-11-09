@@ -1,0 +1,20 @@
+.frameHeaderWrap {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    height: 30px;
+
+    .titleWrap {
+        flex: auto;
+        height: 100%;
+    }
+
+    .rightButton {
+        flex: none;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+        width: 47px;
+    }
+}

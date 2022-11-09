@@ -1,5 +1,9 @@
 const { contextBridge, ipcRenderer } = require('electron')
 
+contextBridge.exposeInMainWorld('electronInit', {
+    getWindowType: () => ipcRenderer.invoke('invoke:setWindowType')
+})
+
 contextBridge.exposeInMainWorld('electronAPI', {
     openFile: () => ipcRenderer.invoke('dialog:openFile'),
     onHandleAccelerator : (callback) => ipcRenderer.on('invoke:accelerator', callback),
@@ -7,5 +11,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
     onHandleFocusOrBlur: (callback) => ipcRenderer.on('invoke:focusOrBlur', callback),
     onClearFocusOrBlur : () => ipcRenderer.removeAllListeners('invoke:focusOrBlur'),
     onInvokePenetrate: () => ipcRenderer.send('invoke:penetrate'),
-    submitTaskRecordApi: (data) => ipcRenderer.send('api:submitTaskRecord', data)
+    onRefreshTable: (callback) => ipcRenderer.on('invoke:refreshTable', callback),
+    onClearRefreshTable: () => ipcRenderer.removeAllListeners('invoke:refreshTable'),
+    submitTaskRecordApi: (data) => ipcRenderer.send('api:submitTaskRecord', data),
+    askForTaskRecordApi: (filterParam) => ipcRenderer.invoke('invoke:askForTaskRecord', filterParam),
+    deleteTaskTecordApi: (id) => ipcRenderer.invoke('invoke:deleteTaskTecordApi', id)
 })
