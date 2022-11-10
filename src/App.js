@@ -2,6 +2,8 @@ import './App.css';
 import MiniRecoder from './pages/MiniRecorder';
 import { useCallback, useEffect, useState } from 'react';
 import Dashboard from './pages/Dashboard';
+import zhCN from 'antd/es/locale/zh_CN';
+import { ConfigProvider } from 'antd';
 
 function App() {
 
@@ -18,10 +20,10 @@ function App() {
     getWindowType()
   }, [getWindowType])
   return (
-    <div className="App">
+    <ConfigProvider className="App" locale={zhCN}>
       {windowType === 'miniRecorder' && (<MiniRecoder />)}
       {windowType === 'dashboardWindow' && (<Dashboard />)}
-    </div>
+    </ConfigProvider>
   );
 }
 

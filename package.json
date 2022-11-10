@@ -13,7 +13,7 @@
   "scripts": {
     "electron-dev": "node initial_script.js && electron . dev",
     "electron": "node initial_script.js && electron .",
-    "start": "electron-forge start",
+    "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",

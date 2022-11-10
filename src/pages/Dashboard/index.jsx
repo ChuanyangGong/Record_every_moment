@@ -8,14 +8,19 @@ import moment from "moment/moment"
 
 const { RangePicker } = DatePicker;
 
+const keyToChinese = {
+    minutes: 'm',
+    hours: '小时',
+    days: '天',
+    seconds: 's'
+}
+
 export default function Dashboard() {
 
     const deleteTaskItem = useCallback((id) => {
         let modal = Modal.confirm({
             title: '确认删除',
             content: '是否确认要删除？',
-            okText: '确认',
-            cancelText: '取消',
             onOk: async () => {
                 const res = await window.electronAPI.deleteTaskTecordApi(id)
                 if (res.code === 200) {
@@ -33,25 +38,29 @@ export default function Dashboard() {
             {
                 title: '任务描述',
                 dataIndex: 'description',
-                key: 'description',
             },
             {
                 title: '时长',
-                dataIndex: 'duration',
-                key: 'duration',
-                width: 120
+                width: 120,
+                render: row => {
+                    const { duration } = row
+                    return <div>
+                        {duration.map(item => <span key={item.key}>
+                            <span className={styles.duraVal}>{item.val}</span>
+                            <span className={styles.duraLabel}>{item.label} </span>
+                        </span>)}
+                    </div>
+                }
             },
             {
                 title: '开始时间',
-                dataIndex: 'startAt',
-                key: 'startAt',
-                width: 190
+                width: 170,
+                render: row => <div>{row.startAt.slice(0, row.startAt.length - 4)}</div>
             },
             {
                 title: '结束时间',
-                dataIndex: 'endAt',
-                key: 'endAt',
-                width: 190
+                width: 170,
+                render: row => <div>{row.endAt.slice(0, row.startAt.length - 4)}</div>
             },
             {
                 title: '操作',
@@ -97,27 +106,19 @@ export default function Dashboard() {
 
         setTableLoading(true)
         const res = await window.electronAPI.askForTaskRecordApi(filterParam)
-        console.log(res)
         if (res.code === 200) {
             const { data } = res
             const tableData = data.rows.map(item => {
                 const dura = moment.duration(item.duration)
-                let durationStr = ""
-                if (dura.days > 0) {
-                    durationStr += ` ${dura.days()}天`
-                }
-                if (dura.hours > 0) {
-                    durationStr += ` ${dura.hours()}小时`
-                }
-                if (dura.minutes > 0) {
-                    durationStr += ` ${dura.minutes()}分钟`
-                }
-                if (durationStr.length === 0) {
-                    durationStr += ` ${dura.seconds()}秒`
-                }
+                let durationArray = [
+                    { key: 'days', val: dura.days(), label: keyToChinese['days'] },
+                    { key: 'hours', val: dura.hours(), label: keyToChinese['hours'] },
+                    { key: 'minutes', val: dura.minutes(), label: keyToChinese['minutes'] },
+                    { key: 'seconds', val: dura.seconds(), label: keyToChinese['seconds'] },
+                ].filter(item => item.val > 0)
                 return {
                     ...item,
-                    duration: durationStr
+                    duration: durationArray
                 }
             })
             setTableData(tableData)
