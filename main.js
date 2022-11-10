@@ -129,6 +129,10 @@ const createDashboard = () => {
     }
     if (mode === 'dev') {
         dashboardWin.loadURL("http://127.0.0.1:3000/")
+
+        dashboardWin.webContents.openDevTools({
+            mode:'undocked'
+        });
     } else {
         dashboardWin.loadURL(url.format({
             pathname: path.join(__dirname, './build/index.html'),
@@ -136,10 +140,6 @@ const createDashboard = () => {
             slashes: true
         }))
     }
-
-    dashboardWin.webContents.openDevTools({
-        mode:'undocked'
-    });
 }
 
 // 调用 dashboard 去刷新
