@@ -1,20 +1,25 @@
 {
-  "name": "electron_react_seed",
+  "name": "record_every_moment",
   "version": "0.1.0",
   "private": true,
   "main": "main.js",
   "homepage": ".",
+  "description": "This is a time recording and analysis application",
+  "author": "Chuanyang Gong",
   "dependencies": {
+    "electron-squirrel-startup": "^1.0.0",
     "sqlite3": "^5.1.2"
   },
   "scripts": {
     "electron-dev": "node initial_script.js && electron . dev",
     "electron": "node initial_script.js && electron .",
-    "start": "react-scripts start",
+    "start": "electron-forge start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "postinstall": "install-app-deps"
+    "postinstall": "install-app-deps",
+    "package": "electron-forge package",
+    "make": "electron-forge make"
   },
   "eslintConfig": {
     "extends": [
@@ -35,6 +40,11 @@
     ]
   },
   "devDependencies": {
+    "@electron-forge/cli": "^6.0.1",
+    "@electron-forge/maker-deb": "^6.0.1",
+    "@electron-forge/maker-rpm": "^6.0.1",
+    "@electron-forge/maker-squirrel": "^6.0.1",
+    "@electron-forge/maker-zip": "^6.0.1",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
@@ -45,7 +55,6 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-scripts": "5.0.1",
-    "web-vitals": "^2.1.4",
-    "electron-builder": "^23.6.0"
+    "web-vitals": "^2.1.4"
   }
 }
