@@ -64,6 +64,7 @@ const createMiniRecorder = () => {
         resizable: false,
         frame: false,
         transparent: true,
+        skipTaskbar: true,
         webPreferences: {
             preload: path.join(__dirname, 'preload.js')
         },
@@ -306,8 +307,10 @@ app.whenReady().then(() => {
     })
 }).then(() => {
     tray = new Tray(icon)
-    const contextMenu = Menu.buildFromTemplate([
-    ])
+    const contextMenu = Menu.buildFromTemplate([{
+        label: '退出',
+        role: 'quit'
+    }])
     tray.on('double-click', () => {createDashboard()})
     tray.setContextMenu(contextMenu)
 })
