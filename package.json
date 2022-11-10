@@ -1,6 +1,6 @@
 {
   "name": "record_every_moment",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "main": "main.js",
   "homepage": ".",
@@ -14,7 +14,7 @@
     "electron-dev": "node initial_script.js && electron . dev",
     "electron": "node initial_script.js && electron .",
     "start": "react-scripts start",
-    "build": "react-scripts build",
+    "build": "node initial_script.js && react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "postinstall": "install-app-deps",

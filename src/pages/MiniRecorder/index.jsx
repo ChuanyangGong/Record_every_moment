@@ -104,7 +104,7 @@ export default function MiniRecoder() {
     }, [curStatus, curTaskDesc, excuteSubmitTaskRecord, intervalHandler, startInterval, timeRecords])
 
     // 设置快捷键处理函数及事件注册
-    const [winIsFocus, setWinIsFocus] = useState(true)
+    const [winIsFocus, setWinIsFocus] = useState(false)
     const [blurTimeout, setBlurTimeout] = useState(null)
     const inputRef = useRef(null)
     useEffect(() => {

@@ -22,7 +22,7 @@ const winContents = {
 
 // 初始化托盘
 let tray = null
-const icon = nativeImage.createFromPath('./images/trayIcon.png')
+const icon = nativeImage.createFromPath(path.join(__dirname, './images/trayIcon.png'))
 
 // 初始化数据库
 const database_root = path.join(__dirname, '/database')
@@ -43,6 +43,12 @@ const getTargetWindow = target => {
 // read the environment config
 const mode = process.argv[2];
 const createMiniRecorder = () => {
+    let miniRecorder = getTargetWindow('miniRecorder')
+    if (miniRecorder !== null) {
+        miniRecorder.restore()
+        miniRecorder.focus()
+        return
+    }
     // 获取屏幕大小数据
     let priScreenInfo = screen.getPrimaryDisplay()
     let screenWidth = priScreenInfo.size.width;
@@ -110,7 +116,14 @@ const createMiniRecorder = () => {
 }
 
 const createDashboard = () => {
-    const dashboardWin = new BrowserWindow({
+    // 检查时候存在 dashboard 窗口
+    let dashboardWin = getTargetWindow('dashboardWindow')
+    if (dashboardWin !== null) {
+        dashboardWin.restore()
+        dashboardWin.focus()
+        return
+    }
+    dashboardWin = new BrowserWindow({
         width: 1000,
         height: 700,
         minWidth: 700,
@@ -295,6 +308,7 @@ app.whenReady().then(() => {
     tray = new Tray(icon)
     const contextMenu = Menu.buildFromTemplate([
     ])
+    tray.on('double-click', () => {createDashboard()})
     tray.setContextMenu(contextMenu)
 })
 
@@ -303,9 +317,7 @@ app.on('window-all-closed', () => {
 })
 
 function debounce(func, wait, immediate) {
-
     let timeout, result;
-
     let debounced = function () {
         let context = this;
         let args = arguments;
