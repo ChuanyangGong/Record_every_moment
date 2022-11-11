@@ -78,6 +78,9 @@ const createMiniRecorder = () => {
     }
     if (mode === 'dev') {
         mainWindow.loadURL("http://127.0.0.1:3000/")
+        mainWindow.webContents.openDevTools({
+            mode:'undocked'
+        });
     } else {
         mainWindow.loadURL(url.format({
             pathname: path.join(__dirname, './build/index.html'),
@@ -144,9 +147,9 @@ const createDashboard = () => {
     if (mode === 'dev') {
         dashboardWin.loadURL("http://127.0.0.1:3000/")
 
-        dashboardWin.webContents.openDevTools({
-            mode:'undocked'
-        });
+        // dashboardWin.webContents.openDevTools({
+        //     mode:'undocked'
+        // });
     } else {
         dashboardWin.loadURL(url.format({
             pathname: path.join(__dirname, './build/index.html'),
@@ -187,9 +190,12 @@ app.whenReady().then(() => {
             createMiniRecorder()
             return
         }
-        
-        // 最小化窗口
-        miniWindow.minimize()
+        if (miniWindow.isMinimized()) {
+            miniWindow.restore()
+        } else {
+            // 最小化窗口
+            miniWindow.minimize()
+        }
     })
 }).then(() => {
     ipcMain.handle('invoke:setWindowType', (event) => {
@@ -205,6 +211,16 @@ app.whenReady().then(() => {
         const webContents = event.sender
         const miniWindow = BrowserWindow.fromWebContents(webContents)
         miniWindow.setIgnoreMouseEvents(true, { forward: true });
+    })
+    ipcMain.on('handle:minimizeRecorder', (event) => {
+        const webContents = event.sender
+        const miniWindow = BrowserWindow.fromWebContents(webContents)
+        miniWindow.minimize()
+    })
+    ipcMain.on('handle:closeRecorder', (event) => {
+        const webContents = event.sender
+        const miniWindow = BrowserWindow.fromWebContents(webContents)
+        miniWindow.close()
     })
     ipcMain.handle('invoke:askForTaskRecord', async (event, filterParam) => {
         // 查询数据
@@ -312,6 +328,7 @@ app.whenReady().then(() => {
         role: 'quit'
     }])
     tray.on('double-click', () => {createDashboard()})
+    tray.on('click', () => {createMiniRecorder()})
     tray.setContextMenu(contextMenu)
 })
 

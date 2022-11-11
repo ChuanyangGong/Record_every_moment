@@ -8,14 +8,6 @@
     border-radius: 15px;
     transition: opacity 0.2s, width 1s;
 
-    .dragArea {
-        position: absolute;
-        z-index: 9999;
-        -webkit-app-region: drag;
-        height: 20px;
-        width: 100%;
-    }
-
     .inputArea {
         flex: none;
         width: 307px;

@@ -7,6 +7,7 @@ import cn from 'classnames'
 import ClockItem from "./components/ClockItem"
 import Iconfont from "../../components/Iconfont";
 import { Input } from "antd"
+import RecorderHeader from "./components/RecorderHeader"
 const { TextArea } = Input
 
 export default function MiniRecoder() {
@@ -174,7 +175,7 @@ export default function MiniRecoder() {
 
     return (
         <div className={cn(styles.mainWraper, winIsFocus ? '' : styles.mainWraperBlur)}>
-            <div className={styles.dragArea}></div>
+            <RecorderHeader />
             <div className={cn(styles.inputArea, winIsFocus ? '' : styles.inputAreaFocus)}>
                 <div className={styles.inputWrap}>
                     <TextArea

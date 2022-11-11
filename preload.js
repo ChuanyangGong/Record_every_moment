@@ -15,5 +15,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     onClearRefreshTable: () => ipcRenderer.removeAllListeners('invoke:refreshTable'),
     submitTaskRecordApi: (data) => ipcRenderer.send('api:submitTaskRecord', data),
     askForTaskRecordApi: (filterParam) => ipcRenderer.invoke('invoke:askForTaskRecord', filterParam),
-    deleteTaskTecordApi: (id) => ipcRenderer.invoke('invoke:deleteTaskTecordApi', id)
+    deleteTaskTecordApi: (id) => ipcRenderer.invoke('invoke:deleteTaskTecordApi', id),
+    onMinimizeRecorder: () => ipcRenderer.send('handle:minimizeRecorder'),
+    onCloseRecorder: () => ipcRenderer.send('handle:closeRecorder')
 })

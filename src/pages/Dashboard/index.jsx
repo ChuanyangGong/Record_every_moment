@@ -9,10 +9,10 @@ import moment from "moment/moment"
 const { RangePicker } = DatePicker;
 
 const keyToChinese = {
-    minutes: 'm',
+    minutes: '分钟',
     hours: '小时',
     days: '天',
-    seconds: 's'
+    seconds: '秒'
 }
 
 export default function Dashboard() {
