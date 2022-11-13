@@ -22,7 +22,7 @@ const winContents = {
 
 // 初始化托盘
 let tray = null
-const icon = nativeImage.createFromPath(path.join(__dirname, './images/trayIcon.png'))
+const icon = nativeImage.createFromPath(path.join(__dirname, './images/icon.png'))
 
 // 初始化数据库
 const database_root = path.join(__dirname, '/database')

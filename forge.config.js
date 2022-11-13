@@ -1,14 +1,21 @@
+const path = require('path')
 module.exports = {
-  packagerConfig: {},
+  packagerConfig: {
+    icon: path.join(__dirname, './images/icon.ico'),
+    name: "REM",
+  },
   rebuildConfig: {},
   makers: [
     {
       name: '@electron-forge/maker-zip',
-      platforms: ['darwin', 'win32', 'win64'],
+      platforms: ['darwin'],
+      config: {
+      },
     },
     {
       name: '@electron-forge/maker-squirrel',
-      config: {},
+      config: {
+      },
     },
     {
       name: '@electron-forge/maker-deb',
