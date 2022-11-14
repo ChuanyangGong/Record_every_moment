@@ -3,12 +3,13 @@ module.exports = {
   packagerConfig: {
     icon: path.join(__dirname, './images/icon.ico'),
     name: "REM",
+    // asar: true,
   },
   rebuildConfig: {},
   makers: [
     {
       name: '@electron-forge/maker-zip',
-      platforms: ['darwin'],
+      platforms: ['darwin', 'win32'],
       config: {
       },
     },

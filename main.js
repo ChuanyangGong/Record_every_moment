@@ -92,7 +92,7 @@ const createMiniRecorder = () => {
         resizable: false,
         frame: false,
         transparent: true,
-        // skipTaskbar: true,
+        skipTaskbar: true,
         webPreferences: {
             preload: path.join(__dirname, 'preload.js')
         },
