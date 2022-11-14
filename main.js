@@ -265,8 +265,9 @@ app.whenReady().then(() => {
         if (sorterParam) {
             querySql += ` ORDER BY ${sorterParam.key} ${sorterParam.order.replace("end", "").toUpperCase()}`
         } else {
-            querySql += ` ORDER BY 'startAt' DESC`
+            querySql += ` ORDER BY startAt DESC`
         }
+        console.log(querySql)
         const queryPromise = new Promise((resolve, reject) => {
             db.all(querySql, function(err, rows) {
                 if (err) {
