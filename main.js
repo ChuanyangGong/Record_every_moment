@@ -267,7 +267,6 @@ app.whenReady().then(() => {
         } else {
             querySql += ` ORDER BY startAt DESC`
         }
-        console.log(querySql)
         const queryPromise = new Promise((resolve, reject) => {
             db.all(querySql, function(err, rows) {
                 if (err) {
