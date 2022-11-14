@@ -1,6 +1,5 @@
 import { Button, Col, DatePicker, Input, Modal, Row, Table } from "antd"
 import { useState, useEffect, useMemo, useCallback, useRef } from "react"
-import FrameHeader from "../../components/FrameHeader"
 import styles from './index.module.scss'
 import cn from 'classnames'
 import { message } from "antd"
@@ -38,10 +37,12 @@ export default function Dashboard() {
             {
                 title: '任务描述',
                 dataIndex: 'description',
+                key: 'description',
             },
             {
                 title: '时长',
                 width: 120,
+                key: 'duration',
                 render: row => {
                     const { duration } = row
                     return <div>
@@ -54,12 +55,16 @@ export default function Dashboard() {
             },
             {
                 title: '开始时间',
+                key: 'startAt',
                 width: 170,
+                sorter: true,
                 render: row => <div>{row.startAt.slice(0, row.startAt.length - 4)}</div>
             },
             {
                 title: '结束时间',
+                key: 'endAt',
                 width: 170,
+                sorter: true,
                 render: row => <div>{row.endAt.slice(0, row.startAt.length - 4)}</div>
             },
             {
@@ -90,6 +95,7 @@ export default function Dashboard() {
     const [total, setTotal] = useState(0)
     const [currentPage, setCurrentPage] = useState(1)
     const [pageSize, setPageSize] = useState(7)
+    const [sorterParams, setSorteParams] = useState(null)
 
     const fetchTableData = useCallback(async () => {
         const filterParam = {
@@ -105,7 +111,7 @@ export default function Dashboard() {
         }
 
         setTableLoading(true)
-        const res = await window.electronAPI.askForTaskRecordApi(filterParam)
+        const res = await window.electronAPI.askForTaskRecordApi(filterParam, sorterParams)
         if (res.code === 200) {
             const { data } = res
             const tableData = data.rows.map(item => {
@@ -125,7 +131,7 @@ export default function Dashboard() {
             setTotal(data.total)
         }
         setTableLoading(false)
-    }, [currentPage, dateRange, keyword, pageSize])
+    }, [currentPage, dateRange, keyword, pageSize, sorterParams])
 
     useEffect(() => {
         fetchTableData()
@@ -161,7 +167,7 @@ export default function Dashboard() {
             </Row>
             <div className={styles.tableWrap}>
                 <Table
-                    key={'id'}
+                    rowKey={'id'}
                     loading={tableLoading}
                     style={{height: '100%'}}
                     columns={columns}
@@ -173,10 +179,18 @@ export default function Dashboard() {
                         showTotal: total => `共 ${total} 条数据`,
                         position: ['bottomRIght']
                     }}
-                    onChange={pagination => {
+                    onChange={(pagination, filters, sorter) => {
                         let { current, pageSize } = pagination;
                         setCurrentPage(current)
                         setPageSize(pageSize)
+                        if (sorter?.order?.length > 0) {
+                            setSorteParams({
+                                order: sorter?.order,
+                                key: sorter?.columnKey
+                            })
+                        } else {
+                            setSorteParams(null)
+                        }
                     }}
                 />
             </div>

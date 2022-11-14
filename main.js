@@ -40,6 +40,34 @@ const getTargetWindow = target => {
     return tarWin
 }
 
+// MiniRecorder size manager
+const winMaxWidth = 500
+const winMinWidth = 248
+let handler = null
+const sizeManager = (miniRecorder, min) => {
+    const [curWidth, curHeight] = miniRecorder.getSize()
+    const [curX, curY] = miniRecorder.getPosition()
+    let offset = winMaxWidth - winMinWidth
+    if (handler != null) {
+        clearTimeout(handler)
+        handler = null
+    }
+
+    if (min && (curWidth - winMinWidth > 5 || curWidth - winMinWidth < -5)) {
+        handler = setTimeout(() => {
+            miniRecorder.setResizable(true)
+            miniRecorder.setSize(curWidth - offset, curHeight, true)
+            miniRecorder.setPosition(curX + offset, curY)
+            miniRecorder.setResizable(false)
+        }, 1000)
+    } else if (!min && (curWidth - winMaxWidth > 5 || curWidth - winMaxWidth < -5)) {
+        miniRecorder.setResizable(true)
+        miniRecorder.setSize(curWidth + offset, curHeight, true)
+        miniRecorder.setPosition(curX - offset, curY)
+        miniRecorder.setResizable(false)
+    }
+}
+
 // read the environment config
 const mode = process.argv[2];
 const createMiniRecorder = () => {
@@ -50,11 +78,11 @@ const createMiniRecorder = () => {
         return
     }
     // 获取屏幕大小数据
-    let priScreenInfo = screen.getPrimaryDisplay()
-    let screenWidth = priScreenInfo.size.width;
-    let winWidth = 500
+    let winWidth = winMaxWidth
     let winHeight = 90
     let margin = 40
+    let priScreenInfo = screen.getPrimaryDisplay()
+    let screenWidth = priScreenInfo.size.width;
     
     const mainWindow = new BrowserWindow({
         width: winWidth,
@@ -64,7 +92,7 @@ const createMiniRecorder = () => {
         resizable: false,
         frame: false,
         transparent: true,
-        skipTaskbar: true,
+        // skipTaskbar: true,
         webPreferences: {
             preload: path.join(__dirname, 'preload.js')
         },
@@ -72,15 +100,16 @@ const createMiniRecorder = () => {
         icon: icon
     })
 
+
     winContents.miniRecorder = {
         type: 'miniRecorder',
         id: mainWindow.id
     }
     if (mode === 'dev') {
         mainWindow.loadURL("http://127.0.0.1:3000/")
-        mainWindow.webContents.openDevTools({
-            mode:'undocked'
-        });
+        // mainWindow.webContents.openDevTools({
+        //     mode:'undocked'
+        // });
     } else {
         mainWindow.loadURL(url.format({
             pathname: path.join(__dirname, './build/index.html'),
@@ -96,8 +125,9 @@ const createMiniRecorder = () => {
 
     // 监听窗口事件
     mainWindow.on('focus', () => {
-        mainWindow.webContents.send('invoke:focusOrBlur', 'focus')
         mainWindow.setIgnoreMouseEvents(false)
+        sizeManager(mainWindow, false)
+        mainWindow.webContents.send('invoke:focusOrBlur', 'focus')
     })
     mainWindow.on('blur', () => mainWindow.webContents.send('invoke:focusOrBlur', 'blur'))
 
@@ -147,9 +177,9 @@ const createDashboard = () => {
     if (mode === 'dev') {
         dashboardWin.loadURL("http://127.0.0.1:3000/")
 
-        // dashboardWin.webContents.openDevTools({
-        //     mode:'undocked'
-        // });
+        dashboardWin.webContents.openDevTools({
+            mode:'undocked'
+        });
     } else {
         dashboardWin.loadURL(url.format({
             pathname: path.join(__dirname, './build/index.html'),
@@ -211,6 +241,8 @@ app.whenReady().then(() => {
         const webContents = event.sender
         const miniWindow = BrowserWindow.fromWebContents(webContents)
         miniWindow.setIgnoreMouseEvents(true, { forward: true });
+        sizeManager(miniWindow, true)
+
     })
     ipcMain.on('handle:minimizeRecorder', (event) => {
         const webContents = event.sender
@@ -222,12 +254,18 @@ app.whenReady().then(() => {
         const miniWindow = BrowserWindow.fromWebContents(webContents)
         miniWindow.close()
     })
-    ipcMain.handle('invoke:askForTaskRecord', async (event, filterParam) => {
+    ipcMain.handle('invoke:askForTaskRecord', async (event, filterParam, sorterParam) => {
         // 查询数据
         const db = connectDb(data_path)
         let querySql = `SELECT * FROM task_record_tb WHERE isDelete = 0 AND description LIKE '%${filterParam.keyword ?? ""}%'`
         if (filterParam.startAt) {
             querySql += ` AND startAt BETWEEN '${filterParam.startAt}' AND '${filterParam.endAt}'`
+        }
+        // 排序
+        if (sorterParam) {
+            querySql += ` ORDER BY ${sorterParam.key} ${sorterParam.order.replace("end", "").toUpperCase()}`
+        } else {
+            querySql += ` ORDER BY 'startAt' DESC`
         }
         const queryPromise = new Promise((resolve, reject) => {
             db.all(querySql, function(err, rows) {
