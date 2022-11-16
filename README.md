@@ -1,70 +1,120 @@
-# Getting Started with Create React App
+# Record Every Moment
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## 简介
+这是一个**时间记录小工具**项目。由于我本人经常使用电脑进行工作和学习，并且需要定期总结、汇报自己一段时间内的工作内容、时长以及进度（例如组会汇报一周的工作、Work from home 时自己一天实际工作了多长时间），因此非常想要一个工具能够只使用键盘进行操作，就可以**快速的记录自己正在干的事情、什么时候开始的、什么时候结束的以及花了多少时间**，以便于在需要的时候可以查看到自己的工作记录。如果你和我有一样的需求，不妨试一试这个工具吧。
 
-## Available Scripts
+## 功能介绍及使用教程
+### 功能简介
+1. 计时器
 
-In the project directory, you can run:
+改工具一共包括三个部分，第一个部分是计时器，当选中计时器时，计时器呈现下图所示选中状态。可以通过开始、暂停、结束计时器来创建一个新任务记录，通过在输入框中输入文字来记录该任务的相关信息。
 
-### `npm start`
+<div style="display: flex; justify-content: center;">
+    <image src="./docs/pictures/recorder_extend.png" style="height: 100px"/>
+</div>
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+当未选中计时器时，计时器可以置顶在屏幕最上方，高度透明放在屏幕的某一个角落，并且不会影响鼠标对该部分区域的操作，鼠标点击会穿透到下面的程序中。
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+<div style="display: flex; justify-content: center;">
+    <image src="./docs/pictures/recorder_transparent.png" style="height: 100px;"/>
+</div>
 
-### `npm test`
+**所有对于计时器的操作都可以用快捷键进行而无需使用鼠标**
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+2. 数据面板
 
-### `npm run build`
+第二部分是数据面板，在数据面板上可以查到所有的任务记录，并可以通过时间和关键字进行筛选，通过时间进行排序。
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+<div style="display: flex; justify-content: center;">
+    <image src="./docs/pictures/dashboard.png" style="height: 400px;"/>
+</div>
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+3. 托盘
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+第三部分是托盘，可以通过托盘打开计时器和数据面板，或退出程序。
 
-### `npm run eject`
+<div style="display: flex; justify-content: center;">
+    <image src="./docs/pictures/tray.png" style="height: 60px;"/>
+</div>
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+### 操作介绍
+1. 计时器快捷键操作
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+- **Alt + X**：未选中状态  <==> 选中状态。快捷选中/不选中转换，该快捷键为全局快捷键，在使用其他程序的时候也有效，用于快速更改计时器状态。
+- **Alt + C**：缩小 <===> 恢复。快捷缩小计时器，或者恢复并激活计时器，该快捷键也是全局快捷键。
+- **Ctrl + D**：开始 <===> 暂停。快捷开始计时或暂停计时。该快捷键只有在计时器被激活（选中）时才有效。
+- **Ctrl + F**：结束任务。该快捷键只有在计时器被激活（选中）时并且处于暂停状态才有效。
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+2. 托盘操作介绍
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+- 单击托盘：激活计时器
+- 双击托盘：打开并激活数据面板
+- 右键：打开菜单，里面有退出程序按钮
 
-## Learn More
+## 下载及安装介绍
+### 下载链接
+- windows 版：
+- Linux 版：如有需要可联系我发布
+- Mac 版：如有需要可联系我发布
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+### 安装教程
+本软件为绿色软件，解压后即可使用，操作步骤如下：
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## 项目开发介绍
+### 项目实现简介
 
-### Code Splitting
+由于我本人对前端开发比较熟悉，希望用我所熟悉的技术快速开发一个桌面应用，因此该项目技术栈如下：
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+- React：界面程序开发框架。
+- Ant Design：界面 UI 组件库。
+- Electron：基于 Chromium 和 Node.js 的跨平台桌面应用开发框架。
+- Sqlite：本地数据库实现数据持久化。
 
-### Analyzing the Bundle Size
+### 项目启动
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+首先，克隆本项目并切换到项目根目录
 
-### Making a Progressive Web App
+```
+git clone https://github.com/ChuanyangGong/record-every-moment
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+安装依赖（建议使用最新版的 node 和 npm，并切换到阿里源，否则在安装 electron forge 相关的东西时可能会报错）。
 
-### Advanced Configuration
+```
+npm install
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+启动 react 界面服务（会自动跳出一个网页，关掉即可）
 
-### Deployment
+```
+npm run start
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+再开一个终端（cmd）启动 electron
 
-### `npm run build` fails to minify
+```
+npm run electron-dev
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+### 项目打包发布
+
+打包构建界面部分
+
+```
+npm run build
+```
+
+打包 electron 应用程序
+
+```
+npm make
+```
+
+在 ```out``` 文件夹里就会有打包发布的结果
+
+### 项目关键文件介绍
+
+- electron 与操作系统的交互操作写在 ```main.js``` 文件中
+- 界面内容写在 ```src```中
+  - 计时器在 ```src/pages/MiniRecorder``` 中
+  - 数据面板在 ```src/pages/Dashboard``` 中

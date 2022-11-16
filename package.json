@@ -9,6 +9,7 @@
   "dependencies": {
     "sqlite3": "^5.1.2"
   },
+  "license": "Apache License 2.0",
   "scripts": {
     "electron-dev": "node initial_script.js && electron . dev",
     "electron": "node initial_script.js && electron .",
