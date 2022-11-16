@@ -7,17 +7,20 @@
 ### 功能简介
 1. 计时器
 
-改工具一共包括三个部分，第一个部分是计时器，当选中计时器时，计时器呈现下图所示选中状态。可以通过开始、暂停、结束计时器来创建一个新任务记录，通过在输入框中输入文字来记录该任务的相关信息。
+该工具一共包括三个部分，第一个部分是计时器，当选中计时器时，计时器呈现下图所示选中状态。可以通过开始、暂停、结束计时器来创建一个新任务记录，通过在输入框中输入文字来记录该任务的相关信息。
 
-<div style="display: flex; justify-content: center;">
+![image](./docs/pictures/recorder_extend.png)
+
+<!-- <div style="display: flex; justify-content: center;">
     <image src="./docs/pictures/recorder_extend.png" style="height: 100px"/>
-</div>
+</div> -->
 
 当未选中计时器时，计时器可以置顶在屏幕最上方，高度透明放在屏幕的某一个角落，并且不会影响鼠标对该部分区域的操作，鼠标点击会穿透到下面的程序中。
 
-<div style="display: flex; justify-content: center;">
+![image](./docs/pictures/recorder_transparent.png)
+<!-- <div style="display: flex; justify-content: center;">
     <image src="./docs/pictures/recorder_transparent.png" style="height: 100px;"/>
-</div>
+</div> -->
 
 **所有对于计时器的操作都可以用快捷键进行而无需使用鼠标**
 
@@ -25,17 +28,19 @@
 
 第二部分是数据面板，在数据面板上可以查到所有的任务记录，并可以通过时间和关键字进行筛选，通过时间进行排序。
 
-<div style="display: flex; justify-content: center;">
+![image](./docs/pictures/dashboard.png)
+<!-- <div style="display: flex; justify-content: center;">
     <image src="./docs/pictures/dashboard.png" style="height: 400px;"/>
-</div>
+</div> -->
 
 3. 托盘
 
 第三部分是托盘，可以通过托盘打开计时器和数据面板，或退出程序。
 
-<div style="display: flex; justify-content: center;">
+![image](./docs/pictures/tray.png)
+<!-- <div style="display: flex; justify-content: center;">
     <image src="./docs/pictures/tray.png" style="height: 60px;"/>
-</div>
+</div> -->
 
 ### 操作介绍
 1. 计时器快捷键操作
