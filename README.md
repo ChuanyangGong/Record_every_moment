@@ -89,7 +89,10 @@
 首先，克隆本项目并切换到项目根目录
 
 ```
+// 从 gitee 上克隆项目
 git clone https://gitee.com/g847714121/record-every-moment
+// 或者从 github 上克隆项目
+git clone https://github.com/ChuanyangGong/Record_every_moment.git
 ```
 
 安装依赖（建议使用最新版的 node 和 npm，并切换到阿里源，否则在安装 electron forge 相关的东西时可能会报错）。
